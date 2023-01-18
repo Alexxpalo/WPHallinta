@@ -1,3 +1,44 @@
-p {
-    color: red;
+form {
+    display:flex;
+    flex-direction: column;
+    padding: 1em;
+    gap: 1em;
+}
+
+.form-group {
+    display:flex;
+    flex-direction: row;
+    gap: 0.5em;
+}
+
+label {
+    flex: 1;
+    text-align: right;
+}
+
+input[type="text"] {
+    flex:1;
+    font-size: 1em;
+    padding: 0.5em;
+}
+
+select {
+    flex:1;
+    font-size: 1em;
+    padding: 0.5em;
+}
+
+input[type="date"], input[type="time"] {
+    flex:0.5;
+    font-size: 1em;
+}
+
+input[type="submit"] {
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #5AA646;
+    color: white;
+    border: none;
+    font-size: 1em;
+    padding: 0.5em 2em 0.5em 2em;
 }

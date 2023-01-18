@@ -5,7 +5,7 @@
 function wphallinta_admin_page(){
 	?>
     <h1>Tuotteet</h1>
-	<div class="wrap flex-row" style="gap:25px;">
+	<div class="wrap flex-row gap-25">
         <div class="flex-1">
         <h2>Lisää tuote</h2>
         <form id="add_product_form" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">

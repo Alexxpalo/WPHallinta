@@ -3,8 +3,8 @@
     display:flex;
     flex-direction: column;
     background-color: inherit;
+    border-radius: 60px;
     width:100%;
-    border:1px solid black;
     padding: 50px;
     gap:50px;
 }
@@ -52,4 +52,12 @@
 .product-date > p {
     font-style: italic;
     margin:0;
+}
+
+h2 {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-weight:bolder !important;
+    color: #5AA646;
 }

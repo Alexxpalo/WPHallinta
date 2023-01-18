@@ -40,20 +40,6 @@ function wphallinta_activate() {
 
 register_activation_hook( __FILE__, 'wphallinta_activate' );
 
-// UNINSTALL
-function wphallinta_uninstall() {
-    global $wpdb;
-    $table_name1 = $wpdb->prefix . "tuotteet";
-    $table_name2 = $wpdb->prefix . "varaukset";
-
-    $sql = "DROP TABLE IF EXISTS $table_name1;";
-    $sql .= "DROP TABLE IF EXISTS $table_name2;";
-
-    $wpdb->query($sql);
-}
-
-register_uninstall_hook( __FILE__, 'wphallinta_uninstall' );
-
 // ADMIN MENU
 add_action('admin_menu', 'hallinta_admin_menu');
 
@@ -81,13 +67,19 @@ function wphallinta_enqueue_styles() {
     wp_enqueue_style( 'wphallinta-style', plugin_dir_url( __FILE__ ) . 'styles/wphallinta-admin.css' );
 }
 
-function wphallinta_enqueue_scripts() {
+function wphallinta_enqueue_admin_scripts() {
     wp_enqueue_script( 'wphallinta-script', plugin_dir_url( __FILE__ ) . 'js/wphallinta-admin.js', array('jquery'), '1.0.0', true );
 }
 
-add_action('admin_enqueue_scripts', 'wphallinta_enqueue_styles');
-add_action( 'admin_enqueue_scripts', 'wphallinta_enqueue_scripts' );
+function wphallinta_enqueue_frontend_scripts() {
+    wp_enqueue_script( 'wphallinta-script', plugin_dir_url( __FILE__ ) . 'js/wphallinta-frontend.js', array('jquery'), '1.0.0', true );
+}
 
+
+add_action( 'admin_enqueue_scripts', 'wphallinta_enqueue_styles' );
+add_action( 'admin_enqueue_scripts', 'wphallinta_enqueue_admin_scripts' );
+
+add_action( 'wp_enqueue_scripts', 'wphallinta_enqueue_frontend_scripts' );
 
 // MENU PAGES
 require 'includes/hallinta-admin.php';

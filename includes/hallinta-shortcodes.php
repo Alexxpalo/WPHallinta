@@ -47,14 +47,24 @@ add_shortcode( 'wph_varaukset_form', 'wphallinta_varaukset_form_shortcode' );
 
 function wphallinta_varaukset_form_shortcode() {
     wp_enqueue_style( 'wphallinta-style', plugin_dir_url( __FILE__ ) . '../styles/wphallinta-reservations.css' );
-    $output = '<form>
-    <label>Etu- ja sukunimi: </label><input type="text" name="nimi" placeholder="Matti Meikäläinen"><br>
-    <label>Puhelinnumero: </label><input type="text" name="puhelin" placeholder="0401234567"><br>
-    <label>Sähköposti: </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com"><br>
-    <label>Toimitustapa: </label><select name="toimitustapa">
+    $tuotteet_data = json_decode(wphallinta_tuotteet(), true);
+    $output = '<form id="reservation_form">
+    <select>'; 
+    foreach ($tuotteet_data as $data) {
+        $output .= '<option value="'.$data['tuote_id'].'">'.$data['tuote'].'</option>';
+    }
+    $output .='</select>
+    <button type="button" id="btn_add_product" onclick="add_to_reservation()">Lisää varaukseen</button>
+    <div class="form-group"><label>Etu- ja sukunimi: </label><input type="text" name="nimi" placeholder="Matti Meikäläinen"></div>
+    <div class="form-group"><label>Puhelinnumero: </label><input type="text" name="puhelin" placeholder="0401234567"></div>
+    <div class="form-group"><label>Sähköposti: </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com"></div>
+    <div class="form-group"><label>Toimitusosoite: </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
+    <div class="form-group"><label>Toimituksen aika: </label><input type="date" name="paiva"><input type="time" name="aika"></div>
+    <div class="form-group"><label>Toimitustapa: </label><select name="toimitustapa">
         <option value="nouto">Nouto</option>
-        <option value="toimitus">Toimitus</option></select><br>
-    <label>Toimituksen aika: </label><input type="date" name="paiva"><input type="time" name="aika">
+        <option value="toimitus">Toimitus</option>
+        </select></div>
+    <div class="form-group"><input type="submit" value="Varaa"></div>
     </form>';
 
     return $output;
