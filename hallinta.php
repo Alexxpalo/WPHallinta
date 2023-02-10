@@ -73,6 +73,8 @@ function wphallinta_enqueue_admin_scripts() {
 
 function wphallinta_enqueue_frontend_scripts() {
     wp_enqueue_script( 'wphallinta-script', plugin_dir_url( __FILE__ ) . 'js/wphallinta-frontend.js', array('jquery'), '1.0.0', true );
+    $tuotteet_data = "test";
+    wp_localize_script( 'wphallinta-script', 'tuotteetData', $tuotteet_data);
 }
 
 

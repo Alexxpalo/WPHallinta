@@ -8,6 +8,7 @@ function wphallinta_tuotteet() {
     $tuotteet_data = array();
     foreach ( $tuotteet as $tuote ) {
         $tuotteet_data[] = array(
+            'tuote_id' => $tuote->tuote_id,
             'tuote' => $tuote->tuote,
             'varasto' => $tuote->varasto,
             'hinta' => $tuote->hinta,
@@ -49,9 +50,10 @@ function wphallinta_varaukset_form_shortcode() {
     wp_enqueue_style( 'wphallinta-style', plugin_dir_url( __FILE__ ) . '../styles/wphallinta-reservations.css' );
     $tuotteet_data = json_decode(wphallinta_tuotteet(), true);
     $output = '<form id="reservation_form">
-    <select>'; 
+    <script>var product_array = ' . json_encode($tuotteet_data) . ';</script>
+    <select id="selected_id" onchange="show_prices(product_array)"><option value="" disabled selected>Valitse tuote</option>'; 
     foreach ($tuotteet_data as $data) {
-        $output .= '<option value="'.$data['tuote_id'].'">'.$data['tuote'].'</option>';
+        $output .= '<option value="'. $data['tuote_id'] .'">'.$data['tuote'].'</option>';
     }
     $output .='</select>
     <button type="button" id="btn_add_product" onclick="add_to_reservation()">Lisää varaukseen</button>
