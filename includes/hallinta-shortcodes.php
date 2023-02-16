@@ -49,25 +49,55 @@ add_shortcode( 'wph_varaukset_form', 'wphallinta_varaukset_form_shortcode' );
 function wphallinta_varaukset_form_shortcode() {
     wp_enqueue_style( 'wphallinta-style', plugin_dir_url( __FILE__ ) . '../styles/wphallinta-reservations.css' );
     $tuotteet_data = json_decode(wphallinta_tuotteet(), true);
-    $output = '<form id="reservation_form">
+    $output = '<form id="reservation_form" method="POST">
     <script>var product_array = ' . json_encode($tuotteet_data) . ';</script>
     <select id="selected_id" onchange="show_prices(product_array)"><option value="" disabled selected>Valitse tuote</option>'; 
     foreach ($tuotteet_data as $data) {
         $output .= '<option value="'. $data['tuote_id'] .'">'.$data['tuote'].'</option>';
     }
     $output .='</select>
-    <button type="button" id="btn_add_product" onclick="add_to_reservation()">Lisää varaukseen</button>
-    <div class="form-group"><label>Etu- ja sukunimi: </label><input type="text" name="nimi" placeholder="Matti Meikäläinen"></div>
-    <div class="form-group"><label>Puhelinnumero: </label><input type="text" name="puhelin" placeholder="0401234567"></div>
-    <div class="form-group"><label>Sähköposti: </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com"></div>
-    <div class="form-group"><label>Toimitusosoite: </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
-    <div class="form-group"><label>Toimituksen aika: </label><input type="date" name="paiva"><input type="time" name="aika"></div>
-    <div class="form-group"><label>Toimitustapa: </label><select name="toimitustapa">
+    <div class="form-group"><label>Etu- ja sukunimi * </label><input type="text" name="nimi" placeholder="Matti Meikäläinen" ></div>
+    <div class="form-group"><label>Puhelinnumero * </label><input type="text" name="puhelin" placeholder="0401234567" ></div>
+    <div class="form-group"><label>Sähköposti * </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com" ></div>
+    <div class="form-group"><label>Toimitusosoite  </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
+    <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika"></div>
+    <div class="form-group"><label>Toimitustapa * </label><select name="toimitustapa" >
         <option value="nouto">Nouto</option>
         <option value="toimitus">Toimitus</option>
         </select></div>
-    <div class="form-group"><input type="submit" value="Varaa"></div>
+    <div class="form-group"><input type="submit" name="submit_reservation" value="Varaa"></div>
     </form>';
 
+    if(isset($_POST['submit_reservation'])) {
+        $tilaaja = $_POST['nimi'];
+        $puhelinnro = $_POST['puhelin'];
+        $email = $_POST['email'];
+        $osoite = $_POST['osoite'];
+        $toimituspvm = $_POST['paiva'];
+        $toimitusaika = $_POST['aika'];
+        $toimitustapa = $_POST['toimitustapa'];
+        $maarat = $_POST['maara'];
+        $laadut = $_POST['laatu'];
+        $varatut_id = $_POST['tuote_id'];
+        
+        for($x = 0; $x < count($maarat); $x++){
+            $output .= '<script>console.log("'.$varatut_id[$x] . ' : '. $laadut[$x] .' : ' .$maarat[$x].'")</script>';
+        }
+    }
     return $output;
 }
+
+/*
+wp_varaukset table containts:
+varaus_id int(11) AI PK
+varaus_url_param varchar(255)
+tilaajan nimi varchar(255)
+puhelinnumero varchar(255)
+email varchar(255)
+osoite varchar(255)
+tilauspvm date current_timestamp
+toimituspvm date
+toimitustapa varchar(255)
+varatut tuotteet json
+vahvistettu boolean default 0
+*/
