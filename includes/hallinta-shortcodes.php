@@ -69,35 +69,84 @@ function wphallinta_varaukset_form_shortcode() {
     </form>';
 
     if(isset($_POST['submit_reservation'])) {
-        $tilaaja = $_POST['nimi'];
-        $puhelinnro = $_POST['puhelin'];
-        $email = $_POST['email'];
-        $osoite = $_POST['osoite'];
-        $toimituspvm = $_POST['paiva'];
-        $toimitusaika = $_POST['aika'];
-        $toimitustapa = $_POST['toimitustapa'];
-        $maarat = $_POST['maara'];
-        $laadut = $_POST['laatu'];
-        $varatut_id = $_POST['tuote_id'];
-        
-        for($x = 0; $x < count($maarat); $x++){
-            $output .= '<script>console.log("'.$varatut_id[$x] . ' : '. $laadut[$x] .' : ' .$maarat[$x].'")</script>';
+        global $wpdb;
+        $table_name = $wpdb->prefix . "varaukset";
+        $tilaaja = sanitize_text_field( $_POST['nimi'] );
+        $puhelinnro = sanitize_text_field( $_POST['puhelin'] );
+        $email = sanitize_text_field( $_POST['email'] );
+        $osoite = sanitize_text_field( $_POST['osoite'] );
+        $toimituspvm = sanitize_text_field( $_POST['paiva'] );
+        $toimitusaika = sanitize_text_field( $_POST['aika'] );
+        $toimitustapa = sanitize_text_field( $_POST['toimitustapa'] );
+        $maarat = array_map('sanitize_text_field', $_POST['maara'] );
+        $laadut = array_map('sanitize_text_field', $_POST['laatu'] );
+        $varatut_id = array_map('sanitize_text_field', $_POST['tuote_id'] );
+
+        $output .= '<script>console.log("' . $toimitusaika . '");</script>';
+
+        $varatut_tuotteet = array();
+
+        for($i = 0; $i < count($varatut_id); $i++) {
+            $varatut_tuotteet[] = array(
+                'tuote_id' => $varatut_id[$i],
+                'maara' => $maarat[$i],
+                'laatu' => $laadut[$i]
+            );
         }
+
+        $varatut_tuotteet_json = json_encode($varatut_tuotteet);
+        $url_param = substr(md5(uniqid(rand(), true)), 0, 25);
+        $toimituspvm_aika = new DateTime($toimituspvm);
+        
+        // if toimitusaika is set, add it to the date
+        if($toimitusaika) {
+            $toimitusaika = new DateTime($toimitusaika);
+            $toimituspvm_aika->setTime($toimitusaika->format('H'), $toimitusaika->format('i'));
+        }
+        $toimituspvm_aika = $toimituspvm_aika->format('Y-m-d H:i:s');
+
+
+        $wpdb->insert(
+            $table_name,
+            array(
+                'varaus_url_param' => $url_param,
+                'tilaajan_nimi' => $tilaaja,
+                'puhelinnumero' => $puhelinnro,
+                'email' => $email,
+                'osoite' => $osoite,
+                'toimituspvm' => $toimituspvm_aika,
+                'toimitustapa' => $toimitustapa,
+                'varatut_tuotteet' => $varatut_tuotteet_json
+            ),
+            array(
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s'
+            )
+        );
     }
     return $output;
 }
 
 /*
-wp_varaukset table containts:
-varaus_id int(11) AI PK
-varaus_url_param varchar(255)
-tilaajan nimi varchar(255)
-puhelinnumero varchar(255)
-email varchar(255)
-osoite varchar(255)
-tilauspvm date current_timestamp
-toimituspvm date
-toimitustapa varchar(255)
-varatut tuotteet json
-vahvistettu boolean default 0
+CREATE TABLE `wp_varaukset` (
+  `varaus_id` int(11) NOT NULL AUTO_INCREMENT,
+  `varaus_url_param` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `tilaajan_nimi` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `puhelinnumero` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `osoite` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `tilauspvm` date DEFAULT current_timestamp(),
+  `toimituspvm` date DEFAULT NULL,
+  `toimitustapa` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `varatut_tuotteet` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`varatut_tuotteet`)),
+  `vahvistettu` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`varaus_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci
 */

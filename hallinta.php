@@ -34,11 +34,11 @@ function wphallinta_activate() {
         email VARCHAR(255),
         osoite VARCHAR(255),
         tilauspvm DATE DEFAULT CURRENT_TIMESTAMP,
-        toimituspvm DATE,
+        toimituspvm DATETIME,
         toimitustapa VARCHAR(255),
         varatut_tuotteet JSON,
-        vahvistettu BOOLEAN DEFAULT 0
-    PRIMARY KEY (varaus_id)
+        vahvistettu BOOLEAN DEFAULT 0,
+        PRIMARY KEY (varaus_id)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
