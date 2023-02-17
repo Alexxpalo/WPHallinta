@@ -27,11 +27,18 @@ function wphallinta_activate() {
     ) $charset_collate;";
 
     $sql .= "CREATE TABLE $table_name2 (
-        tilaus_id mediumint(9) NOT NULL AUTO_INCREMENT,
-        tuotteet json NOT NULL,
-        varausaika date NOT NULL,
-        tila varchar(255) NOT NULL,
-        PRIMARY KEY (tilaus_id)
+        varaus_id INT(11) NOT NULL AUTO_INCREMENT,
+        varaus_url_param VARCHAR(255),
+        tilaajan_nimi VARCHAR(255),
+        puhelinnumero VARCHAR(255),
+        email VARCHAR(255),
+        osoite VARCHAR(255),
+        tilauspvm DATE DEFAULT CURRENT_TIMESTAMP,
+        toimituspvm DATE,
+        toimitustapa VARCHAR(255),
+        varatut_tuotteet JSON,
+        vahvistettu BOOLEAN DEFAULT 0
+    PRIMARY KEY (varaus_id)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
