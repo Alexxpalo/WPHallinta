@@ -150,8 +150,13 @@ function wphallinta_admin_varaukset_page(){
             <tbody>
                 <?php
                     foreach ( $varaukset as $varaus ) {
+                        $tuotteet_str = '';
+                        $json_arr = json_decode($varaus->varatut_tuotteet);
+                        foreach ( $json_arr as $tuote ) {
+                            $tuotteet_str .= $tuote->tuote_id . ' - ' . $tuote->laatu . ' - ' . $tuote->maara . '<br>';
+                        }
                         echo '<tr>';
-                        echo '<td>' . $varaus->varatut_tuotteet . '</td>';
+                        echo '<td>' . $tuotteet_str . '</td>';
                         echo '<td>' . $varaus->tilaajan_nimi . '</td>';
                         echo '<td>' . $varaus->puhelinnumero . '</td>';
                         echo '<td>' . $varaus->tila . '</td>';

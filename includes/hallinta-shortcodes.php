@@ -127,6 +127,23 @@ function wphallinta_varaukset_form_shortcode() {
                 '%s'
             )
         );
+
+        $subject = 'Varausvahvistus';
+        $message = 'Hei ' . $tilaaja . '! Olet tehnyt varauksen.<br><br>
+        Varauksen tiedot:<br>
+        Tilaajan nimi: ' . $tilaaja . '<br>
+        Puhelinnumero: ' . $puhelinnro . '<br>
+        Sähköposti: ' . $email . '<br>
+        Toimitustapa: ' . $toimitustapa . '<br>
+        Toimituspäivä: ' . $toimituspvm_aika . '<br><br>
+        Vahvista varaus tästä linkistä: <a href="' . get_permalink() . '/?varaus=' . $url_param . '">Vahvista varaus</a>';
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        $sent = wp_mail( $email, $subject, $message, $headers );
+        if($sent) {
+            $output .= '<script>alert("Varauksesi on lähetetty. Vahvista varaus sähköpostilla.");</script>';
+        } else {
+            $output .= '<script>alert("Varauksesi lähetys epäonnistui.");</script>';
+        }
     }
 
     if ( get_query_var('varaus') ) {
