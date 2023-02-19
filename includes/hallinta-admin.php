@@ -129,9 +129,38 @@ function wphallinta_edit_product_callback() {
 
 //VARAUSHALLINTA
 function wphallinta_admin_varaukset_page(){
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . "varaukset";
+    $varaukset = $wpdb->get_results( "SELECT * FROM $table_name" );
     ?>
     <div class="wrap">
         <h2>Varaukset</h2>
+        <table class="wp-list-table widefat fixed striped posts">
+            <thead>
+                <tr>
+                    <th class="manage-column">Tuotteet</th>
+                    <th class="manage-column">Varaaja</th>
+                    <th class="manage-column">Puhelinnumero</th>
+                    <th class="manage-column">Tila</th>
+                    <th class="manage-column">Toivottu toimitusaika</th>
+                    <th class="manage-column">Toimitustapa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                    foreach ( $varaukset as $varaus ) {
+                        echo '<tr>';
+                        echo '<td>' . $varaus->varatut_tuotteet . '</td>';
+                        echo '<td>' . $varaus->tilaajan_nimi . '</td>';
+                        echo '<td>' . $varaus->puhelinnumero . '</td>';
+                        echo '<td>' . $varaus->tila . '</td>';
+                        echo '<td>' . $varaus->toimituspvm . '</td>';
+                        echo '<td>' . $varaus->toimitustapa . '</td>';
+                        echo '</tr>';
+                    }
+                ?>
+            </tbody>
     </div>
     <?php
 }

@@ -37,7 +37,7 @@ function wphallinta_activate() {
         toimituspvm DATETIME,
         toimitustapa VARCHAR(255),
         varatut_tuotteet JSON,
-        vahvistettu BOOLEAN DEFAULT 0,
+        tila TINYINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (varaus_id)
     ) $charset_collate;";
 
@@ -46,6 +46,13 @@ function wphallinta_activate() {
 }
 
 register_activation_hook( __FILE__, 'wphallinta_activate' );
+
+add_action('init', 'wphallinta_url_params' );
+
+function wphallinta_url_params() {
+    global $wp;
+    $wp->add_query_var('varaus');
+}
 
 // ADMIN MENU
 add_action('admin_menu', 'hallinta_admin_menu');
