@@ -33,7 +33,6 @@ function wphallinta_admin_page(){
                     <th class="manage-column">Hinnat</th>
                     <th class="manage-column">Kuvaus</th>
                     <th class="manage-column">Satokausi</th>
-                    <th class="manage-column">Tunniste</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,12 +48,11 @@ function wphallinta_admin_page(){
                             $hinnat_display .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->arvo . '€<br>';
                         }
                         echo '<tr>';
-                        echo '<td>' . $tuote->tuote . '</td>';
+                        echo '<td><a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_edit_tuote&tuote_id=' . $tuote->tuote_id), 'wphallinta_edit_tuote_nonce' ) . '">' . $tuote->tuote . '</a></td>';
                         echo '<td>' . $tuote->varasto . '</td>';
                         echo '<td>' . $hinnat_display . '</td>';
                         echo '<td>' . $tuote->kuvaus . '</td>';
                         echo '<td>' . date("d/m", strtotime($tuote->satokausi_alku)) . ' - ' . date("d/m", strtotime($tuote->satokausi_loppu)) . '</td>';
-                        echo '<td>' . $tuote->tuote_id . '</td>';
                         echo '</tr>';
                     }
                 ?>
@@ -62,6 +60,62 @@ function wphallinta_admin_page(){
         </table>
         </div>
 	<?php
+}
+
+add_action( 'admin_post_wphallinta_edit_tuote', 'wphallinta_edit_tuote_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_edit_tuote', 'wphallinta_edit_tuote_callback' );
+
+function wphallinta_edit_tuote_callback() {
+    if( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wphallinta_edit_tuote_nonce' ) ) {
+        wp_die('Invalid nonce');
+    }
+    $tuote_id = sanitize_text_field( $_GET['tuote_id'] );
+    global $wpdb;
+    $table_name = $wpdb->prefix . "tuotteet";
+    $tuote = $wpdb->get_row( "SELECT * FROM $table_name WHERE tuote_id = $tuote_id" );
+    
+    echo "<h1>Muokkaa tuotetta</h1>";
+    echo "<form id='edit_product_form' action='" . esc_url( admin_url('admin-post.php') ) . "' method='post'>";
+    echo "<input type='hidden' name='action' value='wphallinta_edit_product'>";
+    echo "<input type='hidden' name='tuote_id' value='" . $tuote->tuote_id . "'>";
+    echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h3>Hinnat</h3>";
+    $hinnat_data = json_decode($tuote->hinta);
+    for($i = 0; $i < count($hinnat_data); $i++) {
+        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br>";
+    }
+    echo "<button type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button>";
+    echo "<button type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
+    echo "<h3>Muut tiedot</h3>";
+    echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;'>" . $tuote->kuvaus . "</textarea><br>";
+    echo "<label>Satokausi: </label>";
+    echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'>-";
+    echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'>";
+    echo "<input type='text' name='varasto' value='" . $tuote->varasto . "'><br>";
+    echo "<input type='submit' value='Tallenna'>";
+    echo "</form>";
+    echo "<script>
+    function add_price() {
+        var form = document.getElementById('edit_product_form');
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'hinnat_nimi[]';
+        form.insertBefore(input, document.getElementById('add_price_button'));
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'hinnat_arvo[]';
+        form.insertBefore(input, document.getElementById('add_price_button'));
+        var br = document.createElement('br');
+        form.insertBefore(br, document.getElementById('add_price_button'));
+    }
+    function remove_price() {
+        var form = document.getElementById('edit_product_form');
+        var inputs = form.querySelectorAll('input[name=\'hinnat_nimi[]\'], input[name=\'hinnat_arvo[]\']');
+        var last_input = inputs[inputs.length - 1];
+        form.removeChild(last_input);
+        var last_input = inputs[inputs.length - 2];
+        form.removeChild(last_input);
+    }
+    </script>";
 }
 
 add_action( 'admin_post_wphallinta_add_product', 'wphallinta_add_product_callback' );
@@ -110,24 +164,8 @@ function wphallinta_add_product_callback() {
     exit;
 }
 
-add_action( 'admin_post_wphallinta_edit_product', 'wphallinta_edit_product_callback' );
-add_action ( 'admin_post_nopriv_wphallinta_edit_product', 'wphallinta_edit_product_callback' );
-
-function wphallinta_edit_product_callback() {
-    if( !isset( $_POST['wphallinta_edit_product_nonce'] ) || !wp_verify_nonce( $_POST['wphallinta_edit_product_nonce'], 'wphallinta_edit_product_nonce' ) ) {
-        die( 'Invalid Nonce' );
-    }
-    $product_id = sanitize_text_field( $_POST['product_id'] );
-    global $wpdb;
-    $table_name = $wpdb->prefix . "tuotteet";
-    $valittu_tuote = $wpdb->get_row( "SELECT * FROM $table_name WHERE id = $product_id" );
-
-
-    wp_redirect( admin_url('admin.php?page=wphallinta_edit_product&product_id=' . $product_id) );
-    exit;
-}
-
 //VARAUSHALLINTA
+
 function wphallinta_admin_varaukset_page(){
     global $wpdb;
 
@@ -143,8 +181,11 @@ function wphallinta_admin_varaukset_page(){
                     <th class="manage-column">Varaaja</th>
                     <th class="manage-column">Puhelinnumero</th>
                     <th class="manage-column">Tila</th>
+                    <th class="manage-column">Tilauksen päivämäärä</th>
                     <th class="manage-column">Toivottu toimitusaika</th>
                     <th class="manage-column">Toimitustapa</th>
+                    <th class="manage-column">Toimitusosoite</th>
+                    <th class="manage-column">Toiminnot</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,12 +201,65 @@ function wphallinta_admin_varaukset_page(){
                         echo '<td>' . $varaus->tilaajan_nimi . '</td>';
                         echo '<td>' . $varaus->puhelinnumero . '</td>';
                         echo '<td>' . $varaus->tila . '</td>';
+                        echo '<td>' . $varaus->tilauspvm . '</td>';
                         echo '<td>' . $varaus->toimituspvm . '</td>';
                         echo '<td>' . $varaus->toimitustapa . '</td>';
+                        echo '<td>' . $varaus->osoite . '</td>';
+                        echo '<td><a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaus&varaus_id=' . $varaus->varaus_id), 'wphallinta_delete_varaus_nonce' ) . '">Poista tilaus</a><br>
+                        <a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_cancel_varaus&varaus_id=' . $varaus->varaus_id), 'wphallinta_cancel_varaus_nonce' ) . '">Peruuta tilaus</a></td>';
                         echo '</tr>';
                     }
                 ?>
             </tbody>
     </div>
     <?php
+}
+
+add_action( 'admin_post_wphallinta_cancel_varaus', 'wphallinta_cancel_varaus_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_cancel_varaus', 'wphallinta_cancel_varaus_callback' );
+
+function wphallinta_cancel_varaus_callback() {
+    if( !isset( $_GET['_wpnonce'] ) || !wp_verify_nonce( $_GET['_wpnonce'], 'wphallinta_cancel_varaus_nonce' ) ) {
+        die( 'Invalid Nonce' );
+    }
+    $varaus_id = sanitize_text_field( $_GET['varaus_id'] );
+    global $wpdb;
+    $table_name = $wpdb->prefix . "varaukset";
+    $data = $wpdb->get_results( "SELECT * FROM $table_name WHERE varaus_id = $varaus_id" );
+    foreach ( $data as $row ) {
+        $email = $row->email;
+        $name = $row->tilaajan_nimi;
+    }
+
+    $to = $email;
+    $subject = 'Tilaus peruutettu';
+    $message = 'Hei, ' . $name . '<br><br>Tilauksenne on peruutettu.<br><br>Ystävällisin terveisin,<br>Heikkilän tila' ;
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+    $sent = wp_mail( $to, $subject, $message, $headers );
+
+    if($sent) {
+        echo '<script>alert("Tilaus peruutettu ja sähköposti lähetetty asiakkaalle.");';
+        $wpdb->delete( $table_name, array( 'varaus_id' => $varaus_id ) );
+        wp_redirect( wp_get_referer() );
+        exit;
+    } else {
+        echo '<script>alert("Tilauksen peruuttamisessa tapahtui virhe.");';
+        wp_redirect( wp_get_referer() );
+        exit;
+    }
+}
+
+add_action( 'admin_post_wphallinta_delete_varaus', 'wphallinta_delete_varaus_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_delete_varaus', 'wphallinta_delete_varaus_callback' );
+
+function wphallinta_delete_varaus_callback() {
+    if( !isset( $_GET['_wpnonce'] ) || !wp_verify_nonce( $_GET['_wpnonce'], 'wphallinta_delete_varaus_nonce' ) ) {
+        die( 'Invalid Nonce' );
+    }
+    $varaus_id = sanitize_text_field( $_GET['varaus_id'] );
+    global $wpdb;
+    $table_name = $wpdb->prefix . "varaukset";
+    $wpdb->delete( $table_name, array( 'varaus_id' => $varaus_id ) );
+    wp_redirect( wp_get_referer() );
+    exit;
 }

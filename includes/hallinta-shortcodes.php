@@ -150,15 +150,26 @@ function wphallinta_varaukset_form_shortcode() {
 
         global $wpdb;
         $table_name = $wpdb->prefix . "varaukset";
+        $table_name2 = $wpdb->prefix . "tuotteet";
         $varaus = get_query_var('varaus', 1);
 
         $varaus_data = $wpdb->get_row( "SELECT * FROM $table_name WHERE varaus_url_param = '$varaus'" );
 
         if($varaus_data) {
             if($varaus_data->tila == 0){
-            $output .= '<script>alert("Tilauksesi on vahvistettu!");</script>';
             $sql = "UPDATE $table_name SET tila = 1 WHERE varaus_url_param = '$varaus'";
+            $json_arr = json_decode($varaus_data->varatut_tuotteet);
+
+            foreach($json_arr as $tuote) {
+                $tuote_id = $tuote->tuote_id;
+                $maara = $tuote->maara;
+                $reduct_sql = $wpdb->prepare( "UPDATE $table_name2 SET varasto = varasto - %d WHERE tuote_id = %d", $maara, $tuote_id );
+                $wpdb->query($reduct_sql);
+            }
+
             $wpdb->query($sql);
+
+            $output .= '<script>alert("Tilauksesi on vahvistettu!");</script>';
         } else {
             $output .= '<script>alert("Tilauksesi vahvistamisessa tapahtui virhe.");</script>';
         }
