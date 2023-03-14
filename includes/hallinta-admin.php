@@ -88,12 +88,15 @@ function wphallinta_edit_tuote_callback() {
     echo "<h1>Muokkaa tuotetta</h1>";
     echo "<h2>Tuote:</h2>";
     echo "<form id='edit_product_form' action='" . esc_url( admin_url('admin-post.php') ) . "' method='post'>";
-    echo "<input type='hidden' name='action' value='wphallinta_edit_product'>";
+    echo "<input type='hidden' name='action' value='wphallinta_submit_edit'>";
     echo "<input type='hidden' name='tuote_id' value='" . $tuote->tuote_id . "'>";
     echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h2>Hinnat:</h2>";
     $hinnat_data = json_decode($tuote->hinta);
     for($i = 0; $i < count($hinnat_data); $i++) {
-        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'> - <input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br class='brs'>";
+        echo "<label>Hinta: </label><input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'> -
+        <label> Arvo: </label><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'>
+        <label> Määrä: </label><input type='text' name='maarat_arvo[]' value='" . $hinnat_data[$i]->maara . "'>
+        <br class='brs'>";
     }
     echo "<button class='product-btn' type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button> - ";
     echo "<button class='product-btn' type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
@@ -102,38 +105,98 @@ function wphallinta_edit_tuote_callback() {
     echo "<h2>Satokausi: </h2>";
     echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'> - ";
     echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'><br>";
-    echo "<label>Määrä: </label><br>";
-    echo "<input type='text' name='varasto' value='" . $tuote->varasto . "'><br>";
     echo "<input class='product-btn' type='submit' value='Tallenna'>";
     echo "</form>";
     echo "</div>";
     echo "<script>
     function add_price() {
         var form = document.getElementById('edit_product_form');
+
+        var label = document.createElement('label');
+        label.innerHTML = 'Hinta: ';
         var input = document.createElement('input');
         input.type = 'text';
         input.name = 'hinnat_nimi[]';
+        form.insertBefore(label, document.getElementById('add_price_button'));
         form.insertBefore(input, document.getElementById('add_price_button'));
+
+        var label = document.createElement('label');
+        label.innerHTML = ' Arvo: ';
         var input = document.createElement('input');
         input.type = 'text';
         input.name = 'hinnat_arvo[]';
+        form.insertBefore(label, document.getElementById('add_price_button'));
         form.insertBefore(input, document.getElementById('add_price_button'));
+
+        var label = document.createElement('label');
+        label.innerHTML = ' Määrä: ';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'maarat_arvo[]';
+        form.insertBefore(label, document.getElementById('add_price_button'));
+        form.insertBefore(input, document.getElementById('add_price_button'));
+
         var br = document.createElement('br');
         br.className = 'brs';
         form.insertBefore(br, document.getElementById('add_price_button'));
     }
     function remove_price() {
         var form = document.getElementById('edit_product_form');
-        var inputs = form.querySelectorAll('input[name=\'hinnat_nimi[]\'], input[name=\'hinnat_arvo[]\']');
+        var inputs = form.querySelectorAll('input[name=\'hinnat_nimi[]\'], input[name=\'hinnat_arvo[]\'], input[name=\'maarat_arvo[]\']');
         var brs = form.querySelectorAll('.brs');
         var last_input = inputs[inputs.length - 1];
         form.removeChild(last_input);
         var last_input = inputs[inputs.length - 2];
         form.removeChild(last_input);
+        var last_input = inputs[inputs.length - 3];
+        form.removeChild(last_input);
         var last_br = brs[brs.length - 1];
         form.removeChild(last_br);
     }
     </script>";
+}
+
+add_action( 'admin_post_wphallinta_submit_edit', 'wphallinta_submit_edit_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_submit_edit', 'wphallinta_submit_edit_callback' );
+
+function wphallinta_submit_edit_callback() {
+    $tuote_id = $_POST['tuote_id'];
+    $tuote = sanitize_text_field($_POST['tuote']);
+    $hinnat_nimi = array_map('sanitize_text_field', $_POST['hinnat_nimi'] );
+    $hinnat_arvo = array_map('sanitize_text_field', $_POST['hinnat_arvo'] );
+    $hinnat_maara = array_map('sanitize_text_field', $_POST['maarat_arvo'] );
+    $satokausi_alku = sanitize_text_field($_POST['satokausi_alku']);
+    $satokausi_loppu = sanitize_text_field($_POST['satokausi_loppu']);
+    $kuvaus = sanitize_text_field($_POST['kuvaus']);
+
+    $hinnat = array();
+    for($i = 0; $i < count($hinnat_nimi); $i++) {
+        $hinnat[$i] = array(
+            'nimi' => $hinnat_nimi[$i],
+            'arvo' => $hinnat_arvo[$i],
+            'maara' => $hinnat_maara[$i]
+        );
+    }
+
+    $hinnat = json_encode($hinnat);
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'tuotteet';
+
+    $wpdb->update(
+        $table_name,
+        array(
+            'tuote' => $tuote,
+            'hinta' => $hinnat,
+            'satokausi_alku' => $satokausi_alku,
+            'satokausi_loppu' => $satokausi_loppu,
+            'kuvaus' => $kuvaus
+        ),
+        array( 'tuote_id' => $tuote_id )
+    );
+
+    wp_redirect( wp_get_referer() );
+    exit;
 }
 
 add_action( 'admin_post_wphallinta_add_product', 'wphallinta_add_product_callback' );
@@ -146,7 +209,7 @@ function wphallinta_add_product_callback() {
     $tuote = sanitize_text_field( $_POST['tuote'] );
     $hinnat_nimi = array_map('sanitize_text_field', $_POST['hinnat_nimi'] );
     $hinnat_arvo = array_map('sanitize_text_field', $_POST['hinnat_arvo'] );
-    $hinnat_maara = array_map('sanitize_text_field', $_POST['hinnat_maara'] ); // hinnat_maara[]
+    $hinnat_maara = array_map('sanitize_text_field', $_POST['hinnat_maara'] );
     $kuvaus = sanitize_text_field( $_POST['kuvaus'] );
     $satokausi_alku = sanitize_text_field( $_POST['satokausi_alku'] );
     $satokausi_loppu = sanitize_text_field( $_POST['satokausi_loppu'] );
