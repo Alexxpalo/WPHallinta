@@ -4,22 +4,27 @@
 //TUOTEHALLINTA
 function wphallinta_admin_page(){
 	?>
+	<div class="wrap form form-txt-14">
     <h1>Tuotteet</h1>
-	<div class="wrap flex-row gap-25">
         <div class="flex-1">
-        <h2>Lisää tuote</h2>
+        <h2>Lisää tuote:</h2>
         <form id="add_product_form" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
             <input type="hidden" name="action" value="wphallinta_add_product">
-            <input type="text" name="tuote" placeholder="Tuotteen nimi"><br><h3>Hinnat</h3>
-            <input type="text" name="hinnat_nimi[]" placeholder="Hinnan 1 nimi"><input type="text" name="hinnat_arvo[]" placeholder="Hinnan 1 arvo"><br>
-            <button type="button" id="add_price_button" onclick="add_price()">Lisää hinta</button>
-            <h3>Muut tiedot</h3>
-            <textarea type="text" name="kuvaus" rows="5" placeholder="Tuotteen kuvaus" style="width:100%;"></textarea><br>
-            <label>Satokausi: </label>
-            <input type="date" name="satokausi_alku">-
-            <input type="date" name="satokausi_loppu">
-            <input type="text" name="varasto" placeholder="Tuotteen määrä"><br>
-            <input type="submit" value="Lisää tuote">
+            <input type="text" name="tuote" placeholder="Tuotteen nimi"><br>
+
+            <h2>Hinnat:</h2>
+            <input type="text" name="hinnat_nimi[]" placeholder="Hinnan 1 nimi">
+            <input type="text" name="hinnat_arvo[]" placeholder="Hinnan 1 arvo"><br>
+            <button class="product-btn" type="button" id="add_price_button" onclick="add_price()">Lisää hinta</button>
+            
+            <h2>Muut tiedot:</h2>
+            <textarea class="form-txtarea" type="text" name="kuvaus" rows="5" placeholder="Tuotteen kuvaus" style="width:100%;"></textarea><br>
+            
+            <h2 style="margin: 5px;">Satokausi: </h2><br>
+            <input style="cursor: pointer;" type="date" name="satokausi_alku"> -
+            <input style="cursor: pointer;" type="date" name="satokausi_loppu"><br>
+            <input style="width: auto;" type="text" name="varasto" placeholder="Tuotteen määrä"><br>
+            <input class="product-btn" type="submit" value="Lisää tuote">
         </form>
         </div>
 
@@ -74,25 +79,30 @@ function wphallinta_edit_tuote_callback() {
     $table_name = $wpdb->prefix . "tuotteet";
     $tuote = $wpdb->get_row( "SELECT * FROM $table_name WHERE tuote_id = $tuote_id" );
     
+    echo "<link rel='stylesheet' href='/wordpress/wordpress/wp-content/plugins/hallinta/styles/wphallinta-admin.css'>";
+    echo "<div class='wrap form form-txt-14'>";
     echo "<h1>Muokkaa tuotetta</h1>";
+    echo "<h2>Tuote:</h2>";
     echo "<form id='edit_product_form' action='" . esc_url( admin_url('admin-post.php') ) . "' method='post'>";
     echo "<input type='hidden' name='action' value='wphallinta_edit_product'>";
     echo "<input type='hidden' name='tuote_id' value='" . $tuote->tuote_id . "'>";
-    echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h3>Hinnat</h3>";
+    echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h2>Hinnat:</h2>";
     $hinnat_data = json_decode($tuote->hinta);
     for($i = 0; $i < count($hinnat_data); $i++) {
-        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br class='brs'>";
+        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'> - <input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br class='brs'>";
     }
-    echo "<button type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button>";
-    echo "<button type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
-    echo "<h3>Muut tiedot</h3>";
+    echo "<button class='product-btn' type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button> - ";
+    echo "<button class='product-btn' type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
+    echo "<h2>Muut tiedot:</h2>";
     echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;'>" . $tuote->kuvaus . "</textarea><br>";
-    echo "<label>Satokausi: </label>";
-    echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'>-";
-    echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'>";
+    echo "<h2>Satokausi: </h2>";
+    echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'> - ";
+    echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'><br>";
+    echo "<label>Määrä: </label><br>";
     echo "<input type='text' name='varasto' value='" . $tuote->varasto . "'><br>";
-    echo "<input type='submit' value='Tallenna'>";
+    echo "<input class='product-btn' type='submit' value='Tallenna'>";
     echo "</form>";
+    echo "</div>";
     echo "<script>
     function add_price() {
         var form = document.getElementById('edit_product_form');
