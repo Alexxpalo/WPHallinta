@@ -362,3 +362,24 @@ function wphallinta_delete_varaus_callback() {
     wp_redirect( wp_get_referer() );
     exit;
 }
+
+function wphallinta_admin_asetukset_page() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . "asetukset";
+    $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
+    ?>
+    <div class="wrap">
+        <h2>Tilaajien tiedot</h2>
+        <p>Täältä voit poistaa tilaajien tiedot tietokannasta.</p>
+        <button>Poista tilaajien tiedot</button>
+        <h2>Varausasetukset</h2>
+        <?php
+        if ($tilaukset_tila[0]->arvo == 0) {
+            echo '<p>Tilaukset ovat tällä hetkellä suljettu.</p><br><button>Kytke tilaukset päälle</button>';
+        } else {
+            echo '<p>Tilaukset ovat tällä hetkellä auki.</p><br><button>Kytke tilaukset pois päältä</button>';
+        }
+        ?>
+    </div>
+    <?php
+}

@@ -13,7 +13,7 @@ function wphallinta_activate() {
     global $wpdb;
     $table_name1 = $wpdb->prefix . "tuotteet";
     $table_name2 = $wpdb->prefix . "varaukset";
-    $table_name3 = $wpdb->prefix . "config";
+    $table_name3 = $wpdb->prefix . "asetukset";
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name1 (
@@ -42,9 +42,12 @@ function wphallinta_activate() {
         PRIMARY KEY (varaus_id)
     ) $charset_collate;";
 
-    $sql .= "CREATE TEABLE $table_name3 (
-        orders_active TINYINT(1) NOT NULL DEFAULT 0,
+    $sql .= "CREATE TABLE $table_name3 (
+        asetus VARCHAR(255),
+        arvo VARCHAR(255)
     ) $charset_collate;";
+
+    $sql .= "INSERT INTO $table_name3 (asetus, arvo) VALUES ('tilaukset_tila', '0');";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
