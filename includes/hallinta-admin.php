@@ -8,13 +8,14 @@ function wphallinta_admin_page(){
     <h1>Tuotteet</h1>
         <div class="flex-1">
         <h2>Lisää tuote:</h2>
-        <form id="add_product_form" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
+        <form id="add_product_form" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="action" value="wphallinta_add_product">
             <input type="text" name="tuote" placeholder="Tuotteen nimi"><br>
 
             <h2>Hinnat:</h2>
             <input type="text" name="hinnat_nimi[]" placeholder="Hinnan 1 nimi">
-            <input type="text" name="hinnat_arvo[]" placeholder="Hinnan 1 arvo"><br>
+            <input type="text" name="hinnat_arvo[]" placeholder="Hinnan 1 arvo">
+            <input type="text" name="hinnat_maara[]" placeholder="Hinnan 1 määrä"><br>
             <button class="product-btn" type="button" id="add_price_button" onclick="add_price()">Lisää hinta</button>
             
             <h2>Muut tiedot:</h2>
@@ -23,7 +24,8 @@ function wphallinta_admin_page(){
             <h2 style="margin: 5px;">Satokausi: </h2><br>
             <input style="cursor: pointer;" type="date" name="satokausi_alku"> -
             <input style="cursor: pointer;" type="date" name="satokausi_loppu"><br>
-            <input style="width: auto;" type="text" name="varasto" placeholder="Tuotteen määrä"><br>
+            <h2>Tuotteen kuva</h2>
+            <input type="file" name="kuvaupload" id="kuva"><br>
             <input class="product-btn" type="submit" value="Lisää tuote">
         </form>
         </div>
@@ -47,15 +49,17 @@ function wphallinta_admin_page(){
                     $tuotteet = $wpdb->get_results( "SELECT * FROM $table_name" );
 
                     foreach ( $tuotteet as $tuote ) {
-                        $hinnat_display = null;
+                        $hinnat_value = null;
+                        $hinnat_maara = null;
                         $hinnat_data = json_decode($tuote->hinta);
                         for($i = 0; $i < count($hinnat_data); $i++) {
-                            $hinnat_display .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->arvo . '€<br>';
+                            $hinnat_value .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->arvo . '€<br>';
+                            $hinnat_maara .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->maara . 'kg<br>';
                         }
                         echo '<tr>';
                         echo '<td><a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_edit_tuote&tuote_id=' . $tuote->tuote_id), 'wphallinta_edit_tuote_nonce' ) . '">' . $tuote->tuote . '</a></td>';
-                        echo '<td>' . $tuote->varasto . '</td>';
-                        echo '<td>' . $hinnat_display . '</td>';
+                        echo '<td>' . $hinnat_maara . '</td>';
+                        echo '<td>' . $hinnat_value . '</td>';
                         echo '<td>' . $tuote->kuvaus . '</td>';
                         echo '<td>' . date("d/m", strtotime($tuote->satokausi_alku)) . ' - ' . date("d/m", strtotime($tuote->satokausi_loppu)) . '</td>';
                         echo '</tr>';
@@ -136,19 +140,37 @@ add_action( 'admin_post_wphallinta_add_product', 'wphallinta_add_product_callbac
 add_action ( 'admin_post_nopriv_wphallinta_add_product', 'wphallinta_add_product_callback' );
 
 function wphallinta_add_product_callback() {
+    if ( ! function_exists ( 'wp_handle_upload' ) ) {
+        require_once( ABSPATH . 'wp-admin/includes/file.php' );
+    }
     $tuote = sanitize_text_field( $_POST['tuote'] );
     $hinnat_nimi = array_map('sanitize_text_field', $_POST['hinnat_nimi'] );
     $hinnat_arvo = array_map('sanitize_text_field', $_POST['hinnat_arvo'] );
+    $hinnat_maara = array_map('sanitize_text_field', $_POST['hinnat_maara'] ); // hinnat_maara[]
     $kuvaus = sanitize_text_field( $_POST['kuvaus'] );
-    $varasto = sanitize_text_field( $_POST['varasto'] );
     $satokausi_alku = sanitize_text_field( $_POST['satokausi_alku'] );
     $satokausi_loppu = sanitize_text_field( $_POST['satokausi_loppu'] );
     $hinnat_json = array();
+    $upload_kuva = $_FILES['kuvaupload'];
+    $upload_overrides = array( 'test_form' => false );
+    $movefile = wp_handle_upload( $upload_kuva, $upload_overrides );
+
+    if ( $movefile && ! isset( $movefile['error'] ) ) {
+        echo "File is valid, and was successfully uploaded.\n";
+        $upload_dir = wp_upload_dir();
+        $filename = basename($movefile['file']);
+        $filepath = $upload_dir['subdir'] . '/' . $filename;
+    } else {
+    wp_die( $movefile['error'], 'File Upload Error' );
+    }
+
+    
 
     for($i = 0; $i < count($hinnat_nimi); $i++) {
         $hinnat_json[] = array(
             'nimi' => $hinnat_nimi[$i],
-            'arvo' => $hinnat_arvo[$i]
+            'arvo' => $hinnat_arvo[$i],
+            'maara' => $hinnat_maara[$i]
         );
     }
 
@@ -161,15 +183,15 @@ function wphallinta_add_product_callback() {
             'tuote' => $tuote,
             'hinta' => $hinnat_json,
             'kuvaus' => $kuvaus,
-            'varasto' => $varasto,
             'satokausi_alku' => $satokausi_alku,
-            'satokausi_loppu' => $satokausi_loppu
+            'satokausi_loppu' => $satokausi_loppu,
+            'kuva_path' => $filepath
         ),
         array(
             '%s',
             '%s',
             '%s',
-            '%d',
+            '%s',
             '%s',
             '%s'
         )

@@ -13,6 +13,7 @@ function wphallinta_activate() {
     global $wpdb;
     $table_name1 = $wpdb->prefix . "tuotteet";
     $table_name2 = $wpdb->prefix . "varaukset";
+    $table_name3 = $wpdb->prefix . "config";
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name1 (
@@ -20,9 +21,9 @@ function wphallinta_activate() {
         tuote varchar(255) NOT NULL,
         hinta json NOT NULL,
         kuvaus TEXT NOT NULL,
-        varasto int NOT NULL DEFAULT 0,
         satokausi_alku date NOT NULL,
         satokausi_loppu date NOT NULL,
+        kuva_path VARCHAR(255),
         PRIMARY KEY (tuote_id)
     ) $charset_collate;";
 
@@ -39,6 +40,10 @@ function wphallinta_activate() {
         varatut_tuotteet JSON,
         tila TINYINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (varaus_id)
+    ) $charset_collate;";
+
+    $sql .= "CREATE TEABLE $table_name3 (
+        orders_active TINYINT(1) NOT NULL DEFAULT 0,
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -74,6 +79,14 @@ function hallinta_admin_menu() {
         'manage_options',
         'hallinta/hallinta-admin-varaukset.php',
         'wphallinta_admin_varaukset_page'
+    );
+    add_submenu_page(
+        'hallinta/hallinta-admin.php',
+        'Asetukset',
+        'Asetukset',
+        'manage_options',
+        'hallinta/hallinta-admin-asetukset.php',
+        'wphallinta_admin_asetukset_page'
     );
 }
 
