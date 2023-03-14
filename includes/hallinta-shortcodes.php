@@ -81,6 +81,7 @@ function wphallinta_varaukset_form_shortcode() {
         $maarat = array_map('sanitize_text_field', $_POST['maara'] );
         $laadut = array_map('sanitize_text_field', $_POST['laatu'] );
         $varatut_id = array_map('sanitize_text_field', $_POST['tuote_id'] );
+        $varatut_name = array_map('sanitize_text_field', $_POST['tuote_name'] );
 
         $varatut_tuotteet = array();
 
@@ -88,7 +89,8 @@ function wphallinta_varaukset_form_shortcode() {
             $varatut_tuotteet[] = array(
                 'tuote_id' => $varatut_id[$i],
                 'maara' => $maarat[$i],
-                'laatu' => $laadut[$i]
+                'laatu' => $laadut[$i],
+                'tuote_nimi' => $varatut_name[$i]
             );
         }
 

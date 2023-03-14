@@ -81,7 +81,7 @@ function wphallinta_edit_tuote_callback() {
     echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h3>Hinnat</h3>";
     $hinnat_data = json_decode($tuote->hinta);
     for($i = 0; $i < count($hinnat_data); $i++) {
-        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br>";
+        echo "<input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'><br class='brs'>";
     }
     echo "<button type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button>";
     echo "<button type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
@@ -105,15 +105,19 @@ function wphallinta_edit_tuote_callback() {
         input.name = 'hinnat_arvo[]';
         form.insertBefore(input, document.getElementById('add_price_button'));
         var br = document.createElement('br');
+        br.className = 'brs';
         form.insertBefore(br, document.getElementById('add_price_button'));
     }
     function remove_price() {
         var form = document.getElementById('edit_product_form');
         var inputs = form.querySelectorAll('input[name=\'hinnat_nimi[]\'], input[name=\'hinnat_arvo[]\']');
+        var brs = form.querySelectorAll('.brs');
         var last_input = inputs[inputs.length - 1];
         form.removeChild(last_input);
         var last_input = inputs[inputs.length - 2];
         form.removeChild(last_input);
+        var last_br = brs[brs.length - 1];
+        form.removeChild(last_br);
     }
     </script>";
 }
@@ -194,7 +198,7 @@ function wphallinta_admin_varaukset_page(){
                         $tuotteet_str = '';
                         $json_arr = json_decode($varaus->varatut_tuotteet);
                         foreach ( $json_arr as $tuote ) {
-                            $tuotteet_str .= $tuote->tuote_id . ' - ' . $tuote->laatu . ' - ' . $tuote->maara . '<br>';
+                            $tuotteet_str .= $tuote->tuote_nimi . ' (' . $tuote->tuote_id . ')<br> ' . $tuote->laatu . ' <br> ' . $tuote->maara . '<br>';
                         }
                         echo '<tr>';
                         echo '<td>' . $tuotteet_str . '</td>';
