@@ -93,7 +93,7 @@ function wphallinta_edit_tuote_callback() {
     echo "<input type='text' name='tuote' value='" . $tuote->tuote . "'><br><h2>Hinnat:</h2>";
     $hinnat_data = json_decode($tuote->hinta);
     for($i = 0; $i < count($hinnat_data); $i++) {
-        echo "<label>Hinta: </label><input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'> -
+        echo "<label>Hinta: </label><input type='text' name='hinnat_nimi[]' value='" . $hinnat_data[$i]->nimi . "'>
         <label> Arvo: </label><input type='text' name='hinnat_arvo[]' value='" . $hinnat_data[$i]->arvo . "'>
         <label> Määrä: </label><input type='text' name='maarat_arvo[]' value='" . $hinnat_data[$i]->maara . "'>
         <br class='brs'>";
