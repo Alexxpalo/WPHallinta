@@ -56,6 +56,10 @@ function wphallinta_varaukset_form_shortcode() {
     $table_name = $wpdb->prefix . "asetukset";
     $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
     $tilaukset_tila = $tilaukset_tila[0]->arvo;
+    $tilaukset_aika_alku = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_aika_alku' LIMIT 1" );
+    $tilaukset_aika_alku = $tilaukset_aika_alku[0]->arvo;
+    $tilaukset_aika_loppu = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_aika_loppu' LIMIT 1" );
+    $tilaukset_aika_loppu = $tilaukset_aika_loppu[0]->arvo;
 
     $tuotteet_data = json_decode(wphallinta_tuotteet(), true);
     $output = '<form id="reservation_form" method="POST">
@@ -69,12 +73,13 @@ function wphallinta_varaukset_form_shortcode() {
     <div class="form-group"><label>Puhelinnumero * </label><input type="text" name="puhelin" placeholder="0401234567" ></div>
     <div class="form-group"><label>Sähköposti * </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com" ></div>
     <div class="form-group"><label>Toimitusosoite  </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
-    <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika"></div>
+    <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika" min="' . $tilaukset_aika_alku . '" max="' . $tilaukset_aika_loppu . '"></div>
     <div class="form-group"><label>Toimitustapa * </label><select name="toimitustapa" >
         <option value="nouto_tori">Nouto torilta</option>
         <option value="nouto_tila">Nouto tilalta</option>
         <option value="toimitus">Toimitus (5€)</option>
         </select></div>
+    <p>Valitse haluamasi tuote ja täytä lomake. Valitse aika ' . $tilaukset_aika_alku . ' ja ' . $tilaukset_aika_loppu . ' väliltä.</p>    
     <div class="form-group"><input type="submit" name="submit_reservation" value="Varaa"></div>
     </form>';
 
