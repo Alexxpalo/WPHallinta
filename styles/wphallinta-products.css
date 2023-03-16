@@ -61,3 +61,21 @@ h2 {
     font-weight:bolder !important;
     color: #5AA646;
 }
+
+.break-word {
+    margin-top: 50px;
+    padding-top: 20px;
+    position: absolute;
+    max-width: 75%;
+    word-wrap: break-word;
+}
+.images {
+    position: relative;
+    object-fit: cover;
+    width: 250px;
+    height: 250px;
+    left: 85%;
+    top: 0%;
+    right: 0%;
+    border-radius: 15px;
+}

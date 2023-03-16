@@ -10,7 +10,7 @@ function wphallinta_tuotteet() {
         $tuotteet_data[] = array(
             'tuote_id' => $tuote->tuote_id,
             'tuote' => $tuote->tuote,
-            'varasto' => $tuote->varasto,
+            //'varasto' => $tuote->varasto,
             'hinta' => $tuote->hinta,
             'kuvaus' => $tuote->kuvaus,
             'satokausi' => date("d/m", strtotime($tuote->satokausi_alku)) . ' - ' . date("d/m", strtotime($tuote->satokausi_loppu)),
@@ -36,8 +36,8 @@ function wphallinta_tuotteet_table_shortcode() {
         $output .= '<div class="product-display">
             <div><h3 class="product-name">'.$data['tuote'].'</h3>
             <div class="product-date"><span class="dashicons dashicons-calendar-alt"></span><p>Satokausi: '.$data['satokausi'].'</p></div></div>
-            <div>'.$data['kuvaus'].'</div>
-            <img src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
+            <div class="break-word">'.$data['kuvaus'].'</div>
+            <img class="images" src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
             <div><p>| '. $hinnat_display .'</p></div>
         </div>';
     }

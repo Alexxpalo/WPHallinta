@@ -104,7 +104,7 @@ function wphallinta_edit_tuote_callback() {
     echo "<button class='product-btn' type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button> - ";
     echo "<button class='product-btn' type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
     echo "<h2>Muut tiedot:</h2>";
-    echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;'>" . $tuote->kuvaus . "</textarea><br>";
+    echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;font-size:18px;'>" . $tuote->kuvaus . "</textarea><br>";
     echo "<h2>Satokausi: </h2>";
     echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'> - ";
     echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'><br>";

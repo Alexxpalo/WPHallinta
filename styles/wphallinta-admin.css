@@ -41,9 +41,11 @@
     border: 1px solid #bcbcbc;
     border-radius: 5px;
     margin-bottom: 5px;
+    font-size: 18px;
 }
 .form label {
     cursor:none;
+    font-size: 22px;
 }
 .form h1 {
     text-align: center;
@@ -52,11 +54,13 @@
 .form h2 {
     position: relative;
     line-height: 5px;
+    font-size: 24px;
 }
 .form-txt-14 {
     font-size: 14px;
 }
 .form-txtarea {
+    font-size: 18px;
     width: 10%;
     height: auto;
     color: #000;
