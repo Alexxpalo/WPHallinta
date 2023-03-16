@@ -82,8 +82,11 @@ function wphallinta_edit_tuote_callback() {
     global $wpdb;
     $table_name = $wpdb->prefix . "tuotteet";
     $tuote = $wpdb->get_row( "SELECT * FROM $table_name WHERE tuote_id = $tuote_id" );
-    
-    echo "<link rel='stylesheet' href='/wordpress/wordpress/wp-content/plugins/hallinta/styles/wphallinta-admin.css'>";
+
+    echo "<style>";
+    include plugin_dir_path( __FILE__ ) . '../styles/wphallinta-admin.css';
+    echo "</style>";
+
     echo "<div class='wrap form form-txt-14'>";
     echo "<h1>Muokkaa tuotetta</h1>";
     echo "<h2>Tuote:</h2>";
@@ -371,15 +374,50 @@ function wphallinta_admin_asetukset_page() {
     <div class="wrap">
         <h2>Tilaajien tiedot</h2>
         <p>Täältä voit poistaa tilaajien tiedot tietokannasta.</p>
-        <button>Poista tilaajien tiedot</button>
+        <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaukset'), 'wphallinta_delete_varaukset_nonce' ); ?>">Poista tilaajien tiedot</a>
         <h2>Varausasetukset</h2>
         <?php
         if ($tilaukset_tila[0]->arvo == 0) {
-            echo '<p>Tilaukset ovat tällä hetkellä suljettu.</p><br><button>Kytke tilaukset päälle</button>';
+            echo '<p>Tilaukset ovat tällä hetkellä suljettu.</p><br>
+            <a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset päälle</a>';
         } else {
-            echo '<p>Tilaukset ovat tällä hetkellä auki.</p><br><button>Kytke tilaukset pois päältä</button>';
+            echo '<p>Tilaukset ovat tällä hetkellä auki.</p><br>
+            <a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset pois päältä</a>';
         }
         ?>
     </div>
     <?php
+}
+
+add_action( 'admin_post_wphallinta_toggle_tilaukset', 'wphallinta_toggle_tilaukset_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_toggle_tilaukset', 'wphallinta_toggle_tilaukset_callback' );
+
+function wphallinta_toggle_tilaukset_callback() {
+    if( !isset( $_GET['_wpnonce'] ) || !wp_verify_nonce( $_GET['_wpnonce'], 'wphallinta_toggle_tilaukset_nonce' ) ) {
+        die( 'Invalid Nonce' );
+    }
+    global $wpdb;
+    $table_name = $wpdb->prefix . "asetukset";
+    $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
+
+    if ($tilaukset_tila[0]->arvo == 0) {
+        $update_to = 1;
+    } else {
+        $update_to = 0;
+    }
+
+    $wpdb->update( $table_name, array( 'arvo' => $update_to ), array( 'asetus' => 'tilaukset_tila' ) );
+    wp_redirect( wp_get_referer() );
+    exit;
+}
+
+add_action( 'admin_post_wphallinta_delete_varaukset', 'wphallinta_delete_varaukset_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_delete_varaukset', 'wphallinta_delete_varaukset_callback' );
+
+function wphallinta_delete_varaukset_callback() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . "varaukset";
+    $wpdb->query( "TRUNCATE TABLE $table_name" );
+    wp_redirect( wp_get_referer() );
+    exit;
 }

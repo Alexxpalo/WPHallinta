@@ -34,7 +34,7 @@ function show_prices(data) {
     for (let x = 0; x < selected_price.length; x++) {
         console.log(selected_price[x].nimi + " " + selected_price[x].arvo);
         laatu.value = selected_price[x].nimi;
-        laatu.innerHTML += "<option value="+ selected_price[x].nimi +">Laatu: " + selected_price[x].nimi + " Hinta: " + selected_price[x].arvo +"€/kg</option>";
+        laatu.innerHTML += "<option value="+ selected_price[x].nimi +">Laatu: " + selected_price[x].nimi + " (Saatavuus: " + selected_price[x].maara +"kg)</option>";
     }
 
     containerDiv.appendChild(otsikko);
