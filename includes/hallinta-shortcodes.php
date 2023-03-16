@@ -71,8 +71,9 @@ function wphallinta_varaukset_form_shortcode() {
     <div class="form-group"><label>Toimitusosoite  </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
     <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika"></div>
     <div class="form-group"><label>Toimitustapa * </label><select name="toimitustapa" >
-        <option value="nouto">Nouto</option>
-        <option value="toimitus">Toimitus</option>
+        <option value="nouto_tori">Nouto torilta</option>
+        <option value="nouto_tila">Nouto tilalta</option>
+        <option value="toimitus">Toimitus (5€)</option>
         </select></div>
     <div class="form-group"><input type="submit" name="submit_reservation" value="Varaa"></div>
     </form>';

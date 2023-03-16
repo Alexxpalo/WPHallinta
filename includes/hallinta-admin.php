@@ -296,10 +296,10 @@ function wphallinta_admin_varaukset_page(){
                         $tuotteet_str = '';
                         $json_arr = json_decode($varaus->varatut_tuotteet);
                         foreach ( $json_arr as $tuote ) {
-                            $tuotteet_str .= $tuote->tuote_nimi . ' (' . $tuote->tuote_id . ')<br> ' . $tuote->laatu . ' <br> ' . $tuote->maara . '<br>';
+                            $tuotteet_str .= $tuote->tuote_nimi . ' (' . $tuote->tuote_id . ')<ul><li>Laatu: ' . $tuote->laatu . ' </li><li>Määrä: ' . $tuote->maara . '</li></ul>';
                         }
                         echo '<tr>';
-                        echo '<td>' . $tuotteet_str . '</td>';
+                        echo '<td class="">' . $tuotteet_str . '</td>';
                         echo '<td>' . $varaus->tilaajan_nimi . '</td>';
                         echo '<td>' . $varaus->puhelinnumero . '</td>';
                         echo '<td>' . $varaus->tila . '</td>';
@@ -372,17 +372,18 @@ function wphallinta_admin_asetukset_page() {
     $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
     ?>
     <div class="wrap">
-        <h2>Tilaajien tiedot</h2>
-        <p>Täältä voit poistaa tilaajien tiedot tietokannasta.</p>
-        <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaukset'), 'wphallinta_delete_varaukset_nonce' ); ?>">Poista tilaajien tiedot</a>
-        <h2>Varausasetukset</h2>
+        <h1 class="setting-title">Tilaajien tiedot</h1>
+        <p class="setting-desc">Täältä voit poistaa tilaajien tiedot tietokannasta.</p><br>
+        <a class="setting-button" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaukset'), 'wphallinta_delete_varaukset_nonce' ); ?>">Poista tilaajien tiedot</a>
+        
+        <h1 class="setting-title">Varausasetukset</h1>
         <?php
         if ($tilaukset_tila[0]->arvo == 0) {
-            echo '<p>Tilaukset ovat tällä hetkellä suljettu.</p><br>
-            <a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset päälle</a>';
+            echo '<p class="setting-desc">Tilaukset ovat tällä hetkellä suljettu.</p><br>
+            <a class="setting-button" href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset päälle</a>';
         } else {
-            echo '<p>Tilaukset ovat tällä hetkellä auki.</p><br>
-            <a href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset pois päältä</a>';
+            echo '<p class="setting-desc">Tilaukset ovat tällä hetkellä auki.</p><br>
+            <a class="setting-button" href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset pois päältä</a>';
         }
         ?>
     </div>
