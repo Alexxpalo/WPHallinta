@@ -33,20 +33,13 @@ function wphallinta_tuotteet_table_shortcode() {
             for($i = 0; $i < count($hinnat_data); $i++) {
                 $hinnat_display .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->arvo . '€ | ';
         }
-        $output .= '
-            <div class="product-display">
-                <div>
-                    <h3 class="product-name">'.$data['tuote'].'</h3>
-                    <div class="product-date"><span class="dashicons dashicons-calendar-alt"></span><p>Satokausi: '.$data['satokausi'].'</p></div>
-                </div>
-                <div class="product-content">
-                    <div class="break-word"><p>'.$data['kuvaus'].'</p></div>
-                    <img class="images" src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
-                </div>
-                <div>
-                    <p>| '. $hinnat_display .'</p>
-                </div>
-            </div>';
+        $output .= '<div class="product-display">
+            <div><h3 class="product-name">'.$data['tuote'].'</h3>
+            <div class="product-date"><span class="dashicons dashicons-calendar-alt"></span><p>Satokausi: '.$data['satokausi'].'</p></div></div>
+            <div>'.$data['kuvaus'].'</div>
+            <img src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
+            <div><p>| '. $hinnat_display .'</p></div>
+        </div>';
     }
     $output .= '</div>';
     return $output;
