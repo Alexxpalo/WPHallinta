@@ -209,18 +209,21 @@ function wphallinta_varaukset_form_shortcode() {
             foreach($json_arr as $tuote) {
                 $tuote_id = $tuote->tuote_id;
                 $maara = $tuote->maara;
-                $hinnat_json = $wpdb->get_row( "SELECT hinta FROM $table_name2 WHERE tuote_id = '$tuote_id'" );
+                $laatu = $tuote->laatu;
+                $hinnat_json = $wpdb->get_var( "SELECT hinta FROM $table_name2 WHERE tuote_id = '$tuote_id'" );
                 $hinnat_json = json_decode($hinnat_json);
                 
                 foreach($hinnat_json as $db_data) {
-                    if ($db_data->nimi == $tuote->laatu) {
-                        $db_data->maara -= $tuote->maara;
+                    if($db_data->nimi == $laatu) {
+                    $db_data->maara -= $maara;
                     }
                 }
-                $reduct_sql = $wpdb->prepare( "UPDATE $table_name2 SET varasto = varasto - %d WHERE tuote_id = %d", $maara, $tuote_id );
-                $wpdb->query($reduct_sql);
             }
 
+            $hinnat_json = json_encode($hinnat_json);
+
+            $sql2 = "UPDATE $table_name2 SET hinta = '$hinnat_json' WHERE tuote_id = '$tuote_id'";
+            $wpdb->query($sql2);
             $wpdb->query($sql);
 
             $output .= '<script>alert("Tilauksesi on vahvistettu!");</script>';
