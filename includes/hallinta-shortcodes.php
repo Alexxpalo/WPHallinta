@@ -10,7 +10,7 @@ function wphallinta_tuotteet() {
         $tuotteet_data[] = array(
             'tuote_id' => $tuote->tuote_id,
             'tuote' => $tuote->tuote,
-            'varasto' => $tuote->varasto,
+            //'varasto' => $tuote->varasto,
             'hinta' => $tuote->hinta,
             'kuvaus' => $tuote->kuvaus,
             'satokausi' => date("d/m", strtotime($tuote->satokausi_alku)) . ' - ' . date("d/m", strtotime($tuote->satokausi_loppu)),
@@ -33,13 +33,20 @@ function wphallinta_tuotteet_table_shortcode() {
             for($i = 0; $i < count($hinnat_data); $i++) {
                 $hinnat_display .= $hinnat_data[$i]->nimi . ': ' . $hinnat_data[$i]->arvo . '€ | ';
         }
-        $output .= '<div class="product-display">
-            <div><h3 class="product-name">'.$data['tuote'].'</h3>
-            <div class="product-date"><span class="dashicons dashicons-calendar-alt"></span><p>Satokausi: '.$data['satokausi'].'</p></div></div>
-            <div>'.$data['kuvaus'].'</div>
-            <img src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
-            <div><p>| '. $hinnat_display .'</p></div>
-        </div>';
+        $output .= '
+            <div class="product-display">
+                <div>
+                    <h3 class="product-name">'.$data['tuote'].'</h3>
+                    <div class="product-date"><span class="dashicons dashicons-calendar-alt"></span><p>Satokausi: '.$data['satokausi'].'</p></div>
+                </div>
+                <div class="product-content">
+                    <div class="break-word"><p>'.$data['kuvaus'].'</p></div>
+                    <img class="images" src="'. $upload_dir['baseurl'] . $data['kuva_path'] .'" alt="'.$data['tuote'].'">
+                </div>
+                <div>
+                    <p>| '. $hinnat_display .'</p>
+                </div>
+            </div>';
     }
     $output .= '</div>';
     return $output;
@@ -56,6 +63,10 @@ function wphallinta_varaukset_form_shortcode() {
     $table_name = $wpdb->prefix . "asetukset";
     $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
     $tilaukset_tila = $tilaukset_tila[0]->arvo;
+    $tilaukset_aika_alku = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_aika_alku' LIMIT 1" );
+    $tilaukset_aika_alku = $tilaukset_aika_alku[0]->arvo;
+    $tilaukset_aika_loppu = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_aika_loppu' LIMIT 1" );
+    $tilaukset_aika_loppu = $tilaukset_aika_loppu[0]->arvo;
 
     $tuotteet_data = json_decode(wphallinta_tuotteet(), true);
     $output = '<form id="reservation_form" method="POST">
@@ -69,12 +80,13 @@ function wphallinta_varaukset_form_shortcode() {
     <div class="form-group"><label>Puhelinnumero * </label><input type="text" name="puhelin" placeholder="0401234567" ></div>
     <div class="form-group"><label>Sähköposti * </label><input type="text" name="email" placeholder="matti.meikalainen@gmail.com" ></div>
     <div class="form-group"><label>Toimitusosoite  </label><input type="text" name="osoite" placeholder="Katuosoite 1, 12345 Kaupunki"></div>
-    <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika"></div>
+    <div class="form-group"><label>Toimituksen aika * </label><input type="date" name="paiva" ><input type="time" name="aika" min="' . $tilaukset_aika_alku . '" max="' . $tilaukset_aika_loppu . '"></div>
     <div class="form-group"><label>Toimitustapa * </label><select name="toimitustapa" >
         <option value="nouto_tori">Nouto torilta</option>
         <option value="nouto_tila">Nouto tilalta</option>
         <option value="toimitus">Toimitus (5€)</option>
         </select></div>
+    <p>Valitse haluamasi tuote ja täytä lomake. Valitse aika ' . $tilaukset_aika_alku . ' ja ' . $tilaukset_aika_loppu . ' väliltä.</p>    
     <div class="form-group"><input type="submit" name="submit_reservation" value="Varaa"></div>
     </form>';
 
@@ -128,7 +140,7 @@ function wphallinta_varaukset_form_shortcode() {
             $db_maara = $db_maara[0]['maara'];
 
             if ($db_maara < $maarat[$i]) {
-                $output = '<p>Varauksen teko epäonnistui. Yritä myöhemmin uudelleen.</p>';
+                $output = '<p>Varauksen teko epäonnistui. Tarkistathan määrän.</p>';
                 return $output;
             }
         }
@@ -177,7 +189,7 @@ function wphallinta_varaukset_form_shortcode() {
         Sähköposti: ' . $email . '<br>
         Toimitustapa: ' . $toimitustapa . '<br>
         Toimituspäivä: ' . $toimituspvm_aika . '<br><br>
-        Vahvista varaus tästä linkistä: <a href="' . get_permalink() . '/?varaus=' . $url_param . '">Vahvista varaus</a>';
+        Vahvista varaus tästä linkistä: <a href="' . get_permalink() . '&varaus=' . $url_param . '">Vahvista varaus</a>';
         $headers = array('Content-Type: text/html; charset=UTF-8');
         $sent = wp_mail( $email, $subject, $message, $headers );
         if($sent) {
@@ -204,6 +216,14 @@ function wphallinta_varaukset_form_shortcode() {
             foreach($json_arr as $tuote) {
                 $tuote_id = $tuote->tuote_id;
                 $maara = $tuote->maara;
+                $hinnat_json = $wpdb->get_row( "SELECT hinta FROM $table_name2 WHERE tuote_id = '$tuote_id'" );
+                $hinnat_json = json_decode($hinnat_json);
+                
+                foreach($hinnat_json as $db_data) {
+                    if ($db_data->nimi == $tuote->laatu) {
+                        $db_data->maara -= $tuote->maara;
+                    }
+                }
                 $reduct_sql = $wpdb->prepare( "UPDATE $table_name2 SET varasto = varasto - %d WHERE tuote_id = %d", $maara, $tuote_id );
                 $wpdb->query($reduct_sql);
             }

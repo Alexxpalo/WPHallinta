@@ -104,7 +104,7 @@ function wphallinta_edit_tuote_callback() {
     echo "<button class='product-btn' type='button' id='add_price_button' onclick='add_price()'>Lisää hinta</button> - ";
     echo "<button class='product-btn' type='button' id='remove_price_button' onclick='remove_price()'>Poista hinta</button>";
     echo "<h2>Muut tiedot:</h2>";
-    echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;'>" . $tuote->kuvaus . "</textarea><br>";
+    echo "<textarea type='text' name='kuvaus' rows='5' style='width:100%;font-size:18px;'>" . $tuote->kuvaus . "</textarea><br>";
     echo "<h2>Satokausi: </h2>";
     echo "<input type='date' name='satokausi_alku' value='" . $tuote->satokausi_alku . "'> - ";
     echo "<input type='date' name='satokausi_loppu' value='" . $tuote->satokausi_loppu . "'><br>";
@@ -372,10 +372,13 @@ function wphallinta_admin_asetukset_page() {
     $tilaukset_tila = $wpdb->get_results( "SELECT * FROM $table_name WHERE asetus = 'tilaukset_tila' LIMIT 1" );
     ?>
     <div class="wrap">
-        <h1 class="setting-title">Tilaajien tiedot</h1>
-        <p class="setting-desc">Täältä voit poistaa tilaajien tiedot tietokannasta.</p><br>
-        <a class="setting-button" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaukset'), 'wphallinta_delete_varaukset_nonce' ); ?>">Poista tilaajien tiedot</a>
-        
+        <div class="setting-container">
+            <h1 class="setting-title">Tilaajien tiedot</h1>
+            <p class="setting-desc">Täältä voit poistaa tilaajien tiedot tietokannasta.</p><br>
+            <a class="setting-button" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=wphallinta_delete_varaukset'), 'wphallinta_delete_varaukset_nonce' ); ?>">Poista tilaajien tiedot</a>
+        </div>
+
+        <div class="setting-container">
         <h1 class="setting-title">Varausasetukset</h1>
         <?php
         if ($tilaukset_tila[0]->arvo == 0) {
@@ -386,8 +389,36 @@ function wphallinta_admin_asetukset_page() {
             <a class="setting-button" href="' . wp_nonce_url( admin_url('admin-post.php?action=wphallinta_toggle_tilaukset'), 'wphallinta_toggle_tilaukset_nonce' ) . '">Kytke tilaukset pois päältä</a>';
         }
         ?>
+        </div>
+
+        <div class="setting-container">
+        <h1 class="setting-title">Tilausten aika</h1>
+        <p class="setting-desc">Tästä voit muokata tilausten aikaikkunaa.</p>
+        <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
+            <input type="hidden" name="action" value="wphallinta_time_tilaukset">
+            <label class="setting-desc">Alku: </label><input type="time" name="uusi_aika_alku"><br>
+            <label class="setting-desc">Loppu: </label><input type="time" name="uusi_aika_loppu"><br>
+            <input type="submit" value="Tallenna" class="setting-submit">
+        </form>
+        </div>
     </div>
     <?php
+}
+
+add_action( 'admin_post_wphallinta_time_tilaukset', 'wphallinta_time_tilaukset_callback' );
+add_action ( 'admin_post_nopriv_wphallinta_time_tilaukset', 'wphallinta_time_tilaukset_callback' );
+
+function wphallinta_time_tilaukset_callback() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . "asetukset";
+    $uusi_aika_alku = sanitize_text_field( $_POST['uusi_aika_alku'] );
+    $uusi_aika_loppu = sanitize_text_field( $_POST['uusi_aika_loppu'] );
+
+    $wpdb->update( $table_name, array( 'arvo' => $uusi_aika_alku ), array( 'asetus' => 'tilaukset_aika_alku' ) );
+    $wpdb->update( $table_name, array( 'arvo' => $uusi_aika_loppu ), array( 'asetus' => 'tilaukset_aika_loppu' ) );
+
+    wp_redirect( wp_get_referer() );
+    exit;
 }
 
 add_action( 'admin_post_wphallinta_toggle_tilaukset', 'wphallinta_toggle_tilaukset_callback' );

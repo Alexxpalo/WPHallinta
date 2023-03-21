@@ -38,7 +38,7 @@ function wphallinta_activate() {
         toimituspvm DATETIME,
         toimitustapa VARCHAR(255),
         varatut_tuotteet JSON,
-        tila TINYINT(1) NOT NULL DEFAULT 0,
+        tila varchar(255) NOT NULL DEFAULT 0,
         PRIMARY KEY (varaus_id)
     ) $charset_collate;";
 
@@ -48,6 +48,8 @@ function wphallinta_activate() {
     ) $charset_collate;";
 
     $sql .= "INSERT INTO $table_name3 (asetus, arvo) VALUES ('tilaukset_tila', '0');";
+    $sql .= "INSERT INTO $table_name3 (asetus, arvo) VALUES ('tilaukset_aika_alku', '0');";
+    $sql .= "INSERT INTO $table_name3 (asetus, arvo) VALUES ('tilaukset_aika_loppu', '0');";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
